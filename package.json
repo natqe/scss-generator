@@ -2,7 +2,7 @@
     "name": "scss-generator",
     "displayName": "scss generator",
     "description": "generate scss markup from your html",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "icon": "images/scsslogo.png",
     "engines": {
         "vscode": "^1.29.0"

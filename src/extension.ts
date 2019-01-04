@@ -32,6 +32,10 @@ export function activate(context: vscode.ExtensionContext) {
                     },
                     html = invoke(workspace.textDocuments.find(({ fileName, languageId }) => languageId === `html` && titleOf(fileName) === titleOf(document.fileName)), `getText`)
 
+                // workspace.findFiles(`**​/**${titleOf(document.fileName)}.**`, `**​/node_modules/**`).then(() => {
+
+                // })
+
                 if (html) {
 
                     let scss = ``
@@ -70,7 +74,13 @@ export function activate(context: vscode.ExtensionContext) {
 
                     }
 
-                    for (const element of values(new JSDOM(html).window.document.body.children)) append(element)
+                    for (const element of values(new JSDOM(html).window.document.body.children)) {
+
+                        append(element)
+
+                        scss += `\n\n`
+
+                    }
 
                     let snippet = new CompletionItem(`scss boilerplate for current file`, 14)
 
