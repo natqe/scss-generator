@@ -50,11 +50,20 @@ export function activate(context: vscode.ExtensionContext) {
                                 if (sibling !== current) return true
                                 else indexInParent = index
                             }),
-                            createBaseSelectors = ({ localName, classList, id }: Element) => `${localName}${prefix(`#`, id) || values(classList).map(token => `.` + token).join(``)}`
+                            classSelectors = (classList: DOMTokenList) => values(classList).map(token => `.` + token).join(``),
+                            createBaseSelectors = ({ localName, classList, id }: Element) => `${localName}${prefix(`#`, id) || classSelectors(classList)}`
 
                         let selectors = createBaseSelectors(current)
 
-                        if (parentElement.childElementCount > 1 && siblings.some(sibling => createBaseSelectors(sibling) === selectors)) selectors += `:nth-of-type(${indexInParent + 1})`
+                        const { localName, classList, id } = current
+
+                        if (parentElement.childElementCount > 1 &&
+                            siblings.some(sibling => {
+                                if (localName === sibling.localName)
+                                    if (!id || id && id === sibling.id)
+                                        if (!classList.length || classList.length <= sibling.classList.length && !values(classList).some(token => !sibling.classList.contains(token)))
+                                            return true
+                            })) selectors += `:nth-of-type(${indexInParent + 1})`
 
                         scss += selectors
 
