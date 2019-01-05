@@ -32,38 +32,33 @@ export function activate(context: vscode.ExtensionContext) {
                     },
                     html = invoke(workspace.textDocuments.find(({ fileName, languageId }) => languageId === `html` && titleOf(fileName) === titleOf(document.fileName)), `getText`)
 
-                // workspace.findFiles(`**​/**${titleOf(document.fileName)}.**`, `**​/node_modules/**`).then(() => {
-
-                // })
-
                 if (html) {
 
                     let scss = ``
 
                     const append = (current: Element, count = 0) => {
 
-                        let indexInParent = 0
-
                         const
                             { parentElement } = current,
-                            siblings: Array<Element> = values(parentElement.children).filter((sibling, index) => {
-                                if (sibling !== current) return true
-                                else indexInParent = index
-                            }),
                             classSelectors = (classList: DOMTokenList) => values(classList).map(token => `.` + token).join(``),
                             createBaseSelectors = ({ localName, classList, id }: Element) => `${localName}${prefix(`#`, id) || classSelectors(classList)}`
 
                         let selectors = createBaseSelectors(current)
 
-                        const { localName, classList, id } = current
+                        if (parentElement.childElementCount > 1) {
 
-                        if (parentElement.childElementCount > 1 &&
-                            siblings.some(sibling => {
+                            const { localName, classList, id } = current
+
+                            const same = (values(parentElement.children) as Array<Element>).filter(sibling => {
                                 if (localName === sibling.localName)
                                     if (!id || id && id === sibling.id)
                                         if (!classList.length || classList.length <= sibling.classList.length && !values(classList).some(token => !sibling.classList.contains(token)))
                                             return true
-                            })) selectors += `:nth-of-type(${indexInParent + 1})`
+                            })
+
+                            if (same.length > 1) selectors += `:nth-of-type(${same.findIndex(item => item === current) + 1})`
+
+                        }
 
                         scss += selectors
 
