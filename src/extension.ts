@@ -4,17 +4,17 @@ import { CompletionBasic } from './basic/basic'
 
 export function activate(context: ExtensionContext) {
 
-    console.log(`[scss-generator] v1.0.6 activated!`)
+    console.log(`[scss-generator] v1.0.8 activated!`)
 
     context.subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,
         {
-            async  provideCompletionItems(document, position, token, context) {
+            async  provideCompletionItems() {
 
                 const html = await CompletionBase.getHtml()
 
                 return [
-                    await new CompletionBasic().init(html)
+                    await CompletionBasic.for(html)
                 ]
 
             }

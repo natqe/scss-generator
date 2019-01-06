@@ -6,7 +6,7 @@ import { CompletionItem, Uri, window, workspace } from 'vscode'
 
 export abstract class CompletionBase extends CompletionItem {
 
-  protected abstract async generate(html: string): Promise<CompletionItem['insertText']>
+  protected abstract async generate(domChildren: Array<Element>): Promise<CompletionItem['insertText']>
 
   private static get fileName() {
     return window.activeTextEditor.document.fileName
@@ -40,7 +40,9 @@ export abstract class CompletionBase extends CompletionItem {
 
     let html: string
 
-    if (!fileHtml) {
+    if (fileHtml) html = fileHtml.getText().trim()
+
+    if (!fileHtml || !html) {
 
       let files: Uri[]
 
@@ -74,13 +76,28 @@ export abstract class CompletionBase extends CompletionItem {
       }
 
     }
-    else html = fileHtml.getText()
 
     return html.trim()
 
   }
 
-  constructor({ label, kind = 14, ...rest }: CompletionItem) {
+  static async for(html: string) {
+
+    const constructor = this as any
+
+    if (constructor !== CompletionBase) {
+
+      const instance: CompletionBase = new constructor()
+
+      instance.insertText = await instance.generate(values(new JSDOM(html).window.document.body.children))
+
+      if (instance.insertText) return instance
+
+    }
+
+  }
+
+  protected constructor({ label, kind = 14, ...rest }: CompletionItem) {
 
     super(label, kind)
 
@@ -93,18 +110,6 @@ export abstract class CompletionBase extends CompletionItem {
       rest
     )
 
-  }
-
-  async init(html: string) {
-
-    this.insertText = await this.generate(html)
-
-    if (this.insertText) return this
-
-  }
-
-  protected domChildren(html: string) {
-    return values(new JSDOM(html).window.document.body.children)
   }
 
 }

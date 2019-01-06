@@ -9,6 +9,6 @@ The extension use your html template to create snippet with initial scss boilerp
 
 none.
 
-### 1.0.7
+### 1.0.8
 
 **Enjoy!**
