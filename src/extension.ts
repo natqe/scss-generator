@@ -1,104 +1,21 @@
-import { JSDOM } from 'jsdom'
-import { invoke, repeat, values } from 'lodash'
-import { prefix } from 'utilizes/prefix'
-import * as vscode from 'vscode'
+import { ExtensionContext, languages } from 'vscode'
+import { CompletionBase } from './base/base.abstract'
+import { CompletionBasic } from './basic/basic'
 
-const { CompletionItem, languages, window, workspace } = vscode
+export function activate(context: ExtensionContext) {
 
-export function activate(context: vscode.ExtensionContext) {
+    console.log(`[scss-generator] v1.0.6 activated!`)
 
     context.subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,
         {
-            provideCompletionItems(document, position, token, context) {
+            async  provideCompletionItems(document, position, token, context) {
 
-                const
-                    titleOf = (fileName: string) => {
+                const html = await CompletionBase.getHtml()
 
-                        let result = fileName.split(fileName.includes(`/`) ? `/` : `\\`).pop()
-
-                        if (result) {
-
-                            if (result.startsWith(`_`)) result = result.slice(1)
-
-                            const lastIndexDot = result.lastIndexOf(`.`)
-
-                            if (lastIndexDot > 0) result = result.slice(0, lastIndexDot)
-
-                            return result
-
-                        }
-
-                    },
-                    html = invoke(workspace.textDocuments.find(({ fileName, languageId }) => languageId === `html` && titleOf(fileName) === titleOf(document.fileName)), `getText`)
-
-                if (html) {
-
-                    let scss = ``
-
-                    const append = (current: Element, count = 0) => {
-
-                        const
-                            { parentElement } = current,
-                            classSelectors = (classList: DOMTokenList) => values(classList).map(token => `.` + token).join(``),
-                            createBaseSelectors = ({ localName, classList, id }: Element) => `${localName}${prefix(`#`, id) || classSelectors(classList)}`
-
-                        let selectors = createBaseSelectors(current)
-
-                        if (parentElement.childElementCount > 1) {
-
-                            const { localName, classList, id } = current
-
-                            const same = (values(parentElement.children) as Array<Element>).filter(sibling => {
-                                if (localName === sibling.localName)
-                                    if (!id || id && id === sibling.id)
-                                        if (!classList.length || classList.length <= sibling.classList.length && !values(classList).some(token => !sibling.classList.contains(token)))
-                                            return true
-                            })
-
-                            if (same.length > 1) selectors += `:nth-of-type(${same.findIndex(item => item === current) + 1})`
-
-                        }
-
-                        scss += selectors
-
-                        scss += ` {`
-
-                        const start = `\n${repeat(`  `, ++count)}`
-
-                        for (const element of values(current.children)) {
-
-                            scss += `${start}>`
-
-                            append(element, count)
-
-                        }
-
-                        scss += `\n${repeat(`  `, --count)}}`
-
-                    }
-
-                    for (const element of values(new JSDOM(html).window.document.body.children)) {
-
-                        append(element)
-
-                        scss += `\n\n`
-
-                    }
-
-                    let snippet = new CompletionItem(`scss boilerplate for current file`, 14)
-
-                    snippet.insertText = scss
-
-                    snippet.
-                        //@ts-ignore
-                        keepWhitespace = true
-
-                    snippet.preselect = true
-
-                    return [snippet]
-
-                }
+                return [
+                    await new CompletionBasic().init(html)
+                ]
 
             }
         }
