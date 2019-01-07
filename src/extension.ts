@@ -4,7 +4,7 @@ import { CompletionBasic } from './basic/basic'
 
 export function activate(context: ExtensionContext) {
 
-    console.log(`[scss-generator] v1.0.8 activated!`)
+    console.log(`[scss-generator] v1.0.9 activated!`)
 
     context.subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,

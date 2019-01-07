@@ -81,17 +81,26 @@ export abstract class CompletionBase extends CompletionItem {
 
   }
 
-  static async for(html: string) {
+  protected static async for(html: string) {
 
-    const constructor = this as any
+    const
+      constructor = this as any,
+      instance: CompletionBase = new constructor,
+      generateResult = await instance.generate(values(new JSDOM(html).window.document.body.children))
 
-    if (constructor !== CompletionBase) {
+    if (generateResult) {
 
-      const instance: CompletionBase = new constructor()
+      instance.insertText = generateResult
 
-      instance.insertText = await instance.generate(values(new JSDOM(html).window.document.body.children))
+      if (typeof generateResult === `string`) {
 
-      if (instance.insertText) return instance
+        instance.documentation = generateResult
+
+        instance.filterText = instance.sortText = `${instance.label} ${generateResult}`
+
+      }
+
+      return instance
 
     }
 
@@ -105,7 +114,8 @@ export abstract class CompletionBase extends CompletionItem {
       this,
       <Partial<CompletionItem>>{
         keepWhitespace: true,
-        preselect: true
+        preselect: true,
+        detail: `[scss generator]`
       },
       rest
     )

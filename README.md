@@ -5,10 +5,15 @@ The extension use your html template to create snippet with initial scss boilerp
 
 ![Example Image](https://i.imgur.com/zzmAm6c.gif)
 
+## usage
+
+Start typing as you know and you see it as a snippet.
+Type the first element of your html template (div e.g.) or use the label - `scss boilerplate for current file` and you see it for sure.
+
 ## Known Issues
 
 none.
 
-### 1.0.8
+### 1.0.9
 
 **Enjoy!**

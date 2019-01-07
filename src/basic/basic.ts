@@ -4,13 +4,17 @@ import { CompletionBase } from '../base/base.abstract'
 
 export class CompletionBasic extends CompletionBase {
 
+  static for(html: string) {
+    return super.for(html)
+  }
+
   protected constructor() {
     super({
       label: `scss boilerplate for current file`
     })
   }
 
-  protected async generate(domChildren:Array<Element>) {
+  protected async generate(domChildren: Array<Element>) {
 
     let scss = ``
 
