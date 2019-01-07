@@ -8,6 +8,7 @@ The extension use your html template to create snippet with initial scss boilerp
 ## usage
 
 Start typing as you know and you see it as a snippet.
+
 Type the first element of your html template (div e.g.) or use the label - `scss boilerplate for current file` and you see it for sure.
 
 ## Known Issues
