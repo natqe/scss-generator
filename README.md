@@ -15,6 +15,6 @@ Type the first element of your html template (div e.g.) or use the label - `scss
 
 none.
 
-### 1.0.9
+### 1.1.0
 
 **Enjoy!**
