@@ -12,7 +12,7 @@ class Level {
 
 export class CompletionAdvanced extends CompletionBase {
 
-  static for(html: string) {
+  static for(html: Array<Element>) {
     return super.for(html)
   }
 

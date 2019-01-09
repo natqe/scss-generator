@@ -1,5 +1,5 @@
 import { repeat } from 'lodash'
-import { MarkdownString } from 'vscode'
+import { MarkdownString, SnippetString } from 'vscode'
 import { CompletionBase } from '../base/base.abstract'
 
 export class CompletionElement extends CompletionBase {
@@ -12,9 +12,11 @@ export class CompletionElement extends CompletionBase {
 
     this.label = this.generatePrefix(item, false)
 
-    this.insertText = this.generate2(item)
+    this.insertText = this.generate3(item)
 
-    this.documentation = new MarkdownString().appendCodeblock(this.insertText, `scss`)
+    this.documentation = new MarkdownString().appendCodeblock(this.insertText.value.replace(/(\\|\$\d+)/g, ``), `scss`)
+
+    this.documentation.isTrusted = true
 
     const id = this.idSelector(item)
 
@@ -23,26 +25,26 @@ export class CompletionElement extends CompletionBase {
   }
 
   private generatePrefix(item: Element, nth = true) {
-    return `${item.localName}${this.idSelector(item) || this.classSelectors(item).join(``)}${nth ? this.nthSelector(item): ``}`
+    return `${item.localName}${this.idSelector(item) || this.classSelectors(item).join(``)}${nth ? this.nthSelector(item) : ``}`
   }
 
-  private generate2(item: Element, level = 0) {
+  private generate3(item: Element, level = 0, scss = new SnippetString) {
 
-    let scss = ``
+    scss.appendText(`${this.generatePrefix(item, !!level)} {`)
 
-    scss += `${this.generatePrefix(item, !!level)} {`
+    scss.appendTabstop()
 
     const start = `\n${repeat(`  `, ++level)}`
 
-    for (const element of Array.from(item.children)) {
+    for (const child of Array.from(item.children)) {
 
-      scss += `${start}>`
+      scss.appendText(`${start}>`)
 
-     scss += this.generate2(element, level)
+      this.generate3(child, level, scss)
 
     }
 
-    scss += `\n${repeat(`  `, --level)}}`
+    scss.appendText(`\n${repeat(`  `, --level)}}`)
 
     return scss
 

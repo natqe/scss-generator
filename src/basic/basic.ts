@@ -3,7 +3,7 @@ import { CompletionBase } from '../base/base.abstract'
 
 export class CompletionBasic extends CompletionBase {
 
-  static for(html: string) {
+  static for(html: Array<Element>) {
     return super.for(html)
   }
 

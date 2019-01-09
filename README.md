@@ -2,9 +2,11 @@
 
 This extension will add snippet to your scss files when you have html file with the same name.
 
-The extension use your html template to create snippet with initial scss boilerplate.
+The extension will use your html template to create a snippet with initial scss boilerplate.
 
 ![Example Image](https://i.imgur.com/zzmAm6c.gif)
+
+<!-- The extension also provied snippet per element. -->
 
 ## usage
 
@@ -16,6 +18,6 @@ Type the first element of your html template (div e.g.) or use the label - `scss
 
 none.
 
-### 1.2.3
+### 1.2.4
 
 **Enjoy!**

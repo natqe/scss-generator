@@ -7,12 +7,12 @@ export abstract class CompletionBase extends CompletionItem {
 
   protected generate?(domChildren: Array<Element>): CompletionItem['insertText']
 
-  protected static for(html: string) {
+  protected static for(html: Array<Element>) {
 
     const
       constructor = this as any,
       instance: CompletionBase = new constructor,
-      generateResult = instance.generate(values(new JSDOM(html).window.document.body.children))
+      generateResult = instance.generate(html)
 
     if (generateResult) {
 

@@ -15,11 +15,11 @@ export function activate(context: ExtensionContext) {
         {
             async  provideCompletionItems() {
 
-                const html = await readHtml()
+                const html = values(new JSDOM(await readHtml()).window.document.body.children)
 
                 return [
                     CompletionBasic.for(html),
-                    ...uniqBy(beside(values(new JSDOM(html).window.document.body.children), `children`).map(element => new CompletionElement(element)), `filterText`)
+                    ...uniqBy(beside(html, `children`).map(element => new CompletionElement(element)), `insertText.value`)
                 ]
 
             }
