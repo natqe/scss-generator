@@ -1,92 +1,18 @@
-import { readFile } from 'fs'
 import { JSDOM } from 'jsdom'
-import { defaultsDeep, size, sortBy, trim, values } from 'lodash'
-import { promisify } from 'util'
-import { CompletionItem, Uri, window, workspace } from 'vscode'
+import { defaultsDeep, values } from 'lodash'
+import prefix from 'utilizes/prefix'
+import { CompletionItem, MarkdownString, Uri, window, workspace } from 'vscode'
 
 export abstract class CompletionBase extends CompletionItem {
 
-  protected abstract async generate(domChildren: Array<Element>): Promise<CompletionItem['insertText']>
+  protected generate?(domChildren: Array<Element>): CompletionItem['insertText']
 
-  private static get fileName() {
-    return window.activeTextEditor.document.fileName
-  }
-
-  private static splitPath(value: string) {
-
-    const
-      trimIt = (string?: string, chars?: string) => trim(string.trim(), chars),
-      seperator = value.includes(`/`) ? `/` : `\\`,
-      [title, ...rest] = trimIt(value, seperator).split(seperator).reverse(),
-      titleSeparator = `.`,
-      titleArray = trim(trimIt(title, titleSeparator), `_`).split(titleSeparator)
-
-    return [title.indexOf(titleSeparator) !== -1 ? titleArray.pop() : null, titleArray.join(titleSeparator), ...rest]
-
-  }
-
-  static async getHtml() {
-
-    const
-      titleOf = (fileName: string) => {
-
-        const [_, title] = this.splitPath(fileName)
-
-        return title
-
-      },
-      compare = (fileName: string) => titleOf(fileName) === titleOf(this.fileName),
-      fileHtml = workspace.textDocuments.find(({ fileName, languageId }) => languageId === `html` && compare(fileName))
-
-    let html: string
-
-    if (fileHtml) html = fileHtml.getText().trim()
-
-    if (!fileHtml || !html) {
-
-      let files: Uri[]
-
-      try {
-        files = await workspace.findFiles(`**/*${titleOf(this.fileName)}.{htm,html}`, `**/node_modules/**`)
-      }
-      catch (error) {
-        console.error(error)
-      }
-
-      if (size(files)) {
-
-        sortBy(files, ({ path }) => {
-
-          const
-            [_, __, folder, ...rest] = this.splitPath(path),
-            [___, ____, fileFolder, ...fileRest] = this.splitPath(this.fileName)
-
-          return folder === fileFolder ? -1 : Math.abs(fileRest.length - rest.length)
-
-        })
-
-        const file = files.find(({ path }) => compare(path))
-
-        if (file) try {
-          html = await promisify(readFile)(file.fsPath, `utf8`)
-        } catch (error) {
-          console.error(error)
-        }
-
-      }
-
-    }
-
-    return html.trim()
-
-  }
-
-  protected static async for(html: string) {
+  protected static for(html: string) {
 
     const
       constructor = this as any,
       instance: CompletionBase = new constructor,
-      generateResult = await instance.generate(values(new JSDOM(html).window.document.body.children))
+      generateResult = instance.generate(values(new JSDOM(html).window.document.body.children))
 
     if (generateResult) {
 
@@ -94,9 +20,9 @@ export abstract class CompletionBase extends CompletionItem {
 
       if (typeof generateResult === `string`) {
 
-        instance.documentation = generateResult
+        instance.documentation = new MarkdownString().appendCodeblock(generateResult, `scss`)
 
-        instance.filterText = instance.sortText = `${instance.label} ${generateResult}`
+        instance.filterText = instance.sortText = `${instance.label}`
 
       }
 
@@ -106,7 +32,7 @@ export abstract class CompletionBase extends CompletionItem {
 
   }
 
-  protected constructor({ label, kind = 14, ...rest }: CompletionItem) {
+  constructor({ label, kind = 14, ...rest }: CompletionItem) {
 
     super(label, kind)
 
@@ -120,6 +46,46 @@ export abstract class CompletionBase extends CompletionItem {
       rest
     )
 
+  }
+
+  protected equalBrothers(of: Element) {
+
+    const { localName, parentElement, id, classList } = of
+
+    return (values(parentElement.children) as Array<Element>).filter(sibling => {
+      if (localName === sibling.localName)
+        if (!id || id && id === sibling.id)
+          if (!classList.length || classList.length <= sibling.classList.length && !values(classList).some(token => !sibling.classList.contains(token)))
+            return true
+    })
+
+  }
+
+  protected nthSelector(of: Element) {
+
+    let result = ``
+
+    const
+      { localName, parentElement, id, classList } = of,
+      same = Array.from(parentElement.children).filter(sibling => {
+        if (localName === sibling.localName)
+          if (!id || id && id === sibling.id)
+            if (!classList.length || classList.length <= sibling.classList.length && !Array.from(classList).some(token => !sibling.classList.contains(token)))
+              return true
+      })
+
+    if (same.length > 1) result += `:nth-of-type(${same.findIndex(item => of === item) + 1})`
+
+    return result
+
+  }
+
+  protected classSelectors({ classList }: Element) {
+    return Array.from(classList).map(token => `.${token}`)
+  }
+
+  protected idSelector({ id }: Element) {
+    return prefix(`#`, id)
   }
 
 }

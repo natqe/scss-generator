@@ -8,7 +8,7 @@ import { readHtml } from './read-html/read-html'
 
 export function activate(context: ExtensionContext) {
 
-    console.log(`[scss-generator] v1.1.1 activated!`)
+    console.log(`[scss-generator] activated!`)
 
     context.subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,

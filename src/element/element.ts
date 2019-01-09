@@ -1,4 +1,5 @@
 import { repeat } from 'lodash'
+import { MarkdownString } from 'vscode'
 import { CompletionBase } from '../base/base.abstract'
 
 export class CompletionElement extends CompletionBase {
@@ -9,9 +10,11 @@ export class CompletionElement extends CompletionBase {
       label: ``
     })
 
-    this.label = this.generatePrefix(item)
+    this.label = this.generatePrefix(item, false)
 
-    this.documentation = this.insertText = this.generate2(item)
+    this.insertText = this.generate2(item)
+
+    this.documentation = new MarkdownString().appendCodeblock(this.insertText, `scss`)
 
     const id = this.idSelector(item)
 
