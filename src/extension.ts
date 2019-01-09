@@ -1,20 +1,25 @@
+import { JSDOM } from 'jsdom'
+import { uniqBy, values } from 'lodash'
 import { ExtensionContext, languages } from 'vscode'
-import { CompletionBase } from './base/base.abstract'
 import { CompletionBasic } from './basic/basic'
+import { beside } from './beside/beside'
+import { CompletionElement } from './element/element'
+import { readHtml } from './read-html/read-html'
 
 export function activate(context: ExtensionContext) {
 
-    console.log(`[scss-generator] v1.0.9 activated!`)
+    console.log(`[scss-generator] v1.1.1 activated!`)
 
     context.subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,
         {
             async  provideCompletionItems() {
 
-                const html = await CompletionBase.getHtml()
+                const html = await readHtml()
 
                 return [
-                    await CompletionBasic.for(html)
+                    CompletionBasic.for(html),
+                    ...uniqBy(beside(values(new JSDOM(html).window.document.body.children), `children`).map(element => new CompletionElement(element)), `filterText`)
                 ]
 
             }
@@ -22,6 +27,3 @@ export function activate(context: ExtensionContext) {
     ))
 
 }
-
-// this method is called when your extension is deactivated
-export function deactivate() { }

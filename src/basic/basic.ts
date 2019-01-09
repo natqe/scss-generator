@@ -1,5 +1,4 @@
-import { repeat, values } from 'lodash'
-import { prefix } from 'utilizes/prefix'
+import { repeat } from 'lodash'
 import { CompletionBase } from '../base/base.abstract'
 
 export class CompletionBasic extends CompletionBase {
@@ -14,41 +13,17 @@ export class CompletionBasic extends CompletionBase {
     })
   }
 
-  protected async generate(domChildren: Array<Element>) {
+  protected generate(domChildren: Array<Element>) {
 
     let scss = ``
 
     const append = (current: Element, count = 0) => {
 
-      const
-        { parentElement } = current,
-        classSelectors = (classList: DOMTokenList) => values(classList).map(token => `.` + token).join(``),
-        createBaseSelectors = ({ localName, classList, id }: Element) => `${localName}${prefix(`#`, id) || classSelectors(classList)}`
-
-      let selectors = createBaseSelectors(current)
-
-      if (parentElement.childElementCount > 1) {
-
-        const { localName, classList, id } = current
-
-        const same = (values(parentElement.children) as Array<Element>).filter(sibling => {
-          if (localName === sibling.localName)
-            if (!id || id && id === sibling.id)
-              if (!classList.length || classList.length <= sibling.classList.length && !values(classList).some(token => !sibling.classList.contains(token)))
-                return true
-        })
-
-        if (same.length > 1) selectors += `:nth-of-type(${same.findIndex(item => item === current) + 1})`
-
-      }
-
-      scss += selectors
-
-      scss += ` {`
+      scss += `${current.localName}${this.idSelector(current) || this.classSelectors(current).join(``)}${this.nthSelector(current)} {`
 
       const start = `\n${repeat(`  `, ++count)}`
 
-      for (const element of values(current.children)) {
+      for (const element of Array.from(current.children)) {
 
         scss += `${start}>`
 
@@ -68,7 +43,7 @@ export class CompletionBasic extends CompletionBase {
 
     }
 
-    return scss
+    return scss.trim()
 
   }
 
