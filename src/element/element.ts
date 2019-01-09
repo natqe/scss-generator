@@ -19,15 +19,15 @@ export class CompletionElement extends CompletionBase {
 
   }
 
-  private generatePrefix(item: Element) {
-    return `${item.localName}${this.idSelector(item) || this.classSelectors(item).join(``)}${this.nthSelector(item)}`
+  private generatePrefix(item: Element, nth = true) {
+    return `${item.localName}${this.idSelector(item) || this.classSelectors(item).join(``)}${nth ? this.nthSelector(item): ``}`
   }
 
   private generate2(item: Element, level = 0) {
 
     let scss = ``
 
-    scss += `${this.generatePrefix(item)} {`
+    scss += `${this.generatePrefix(item, !!level)} {`
 
     const start = `\n${repeat(`  `, ++level)}`
 
