@@ -16,11 +16,9 @@ export function activate({ subscriptions }: ExtensionContext) {
 
                 const html = await readHtml()
 
-                const
-                    past = find(pervious, { html }),
-                    rendered = past || new Rendered(html)
+                let rendered = find(pervious, { html })
 
-                if (!past) pervious.push(rendered)
+                if (!rendered) pervious.push(rendered = new Rendered(html))
 
                 return rendered.snippets
 

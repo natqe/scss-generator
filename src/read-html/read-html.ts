@@ -10,7 +10,7 @@ export const readHtml = async () => {
     { activeTextEditor: { document } } = window,
     titleOf = (fileName: string) => {
 
-      const [_, title] = splitPath(fileName)
+      const [, title] = splitPath(fileName)
 
       return title
 
@@ -27,7 +27,17 @@ export const readHtml = async () => {
     let files: Uri[]
 
     try {
+
       files = await workspace.findFiles(`**/*${titleOf(document.fileName)}.{htm,html}`, `**/node_modules/**`)
+
+      if (!files.length) {
+
+        const [, , folder] = splitPath(document.fileName)
+
+        files = await workspace.findFiles(`**/${folder}/*.{htm,html}`, `**/node_modules/**`)
+
+      }
+
     }
     catch (error) {
       console.error(error)
@@ -45,7 +55,7 @@ export const readHtml = async () => {
 
       })
 
-      const file = files.find(({ path }) => compare(path))
+      const file = files.length > 1 ? files.find(({ path }) => compare(path)) : files[0]
 
       if (file) try {
         html = await promisify(readFile)(file.fsPath, `utf8`)
