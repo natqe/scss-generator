@@ -1,26 +1,28 @@
-import { JSDOM } from 'jsdom'
-import { uniqBy, values } from 'lodash'
+import { find } from 'lodash'
 import { ExtensionContext, languages } from 'vscode'
-import { CompletionBasic } from './basic/basic'
-import { beside } from './beside/beside'
-import { CompletionElement } from './element/element'
 import { readHtml } from './read-html/read-html'
+import { Rendered } from './rendered/rendered'
 
-export function activate(context: ExtensionContext) {
+const pervious: Array<Rendered> = []
+
+export function activate({ subscriptions }: ExtensionContext) {
 
     console.log(`[scss-generator] activated!`)
 
-    context.subscriptions.push(languages.registerCompletionItemProvider(
+    subscriptions.push(languages.registerCompletionItemProvider(
         `scss`,
         {
             async  provideCompletionItems() {
 
-                const html = values(new JSDOM(await readHtml()).window.document.body.children)
+                const html = await readHtml()
 
-                return [
-                    CompletionBasic.for(html),
-                    ...uniqBy(beside(html, `children`).map(element => new CompletionElement(element)), `insertText.value`)
-                ]
+                const
+                    past = find(pervious, { html }),
+                    rendered = past || new Rendered(html)
+
+                if (!past) pervious.push(rendered)
+
+                return rendered.snippets
 
             }
         }
